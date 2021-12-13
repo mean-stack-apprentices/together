@@ -6,6 +6,7 @@ import * as socketIO from "socket.io";
 import http from 'http';
 import dotenv from "dotenv";
 import path from 'path';
+import { UserModel } from './schemas/user.schema.js';
 dotenv.config();
 const __dirname = path.resolve();
 const app = express();
@@ -29,6 +30,13 @@ app.use(cors({
     origin: ['http://localhost:3000', 'http://localhost:4200', 'http://localhost:3501', 'http://localhost:8080']
 }));
 app.use(express.json());
+app.get("/api/users", function (req, res) {
+    UserModel.find()
+        .then(data => res.json({ data }))
+        .catch(err => {
+        res.status(501).json({ errors: err });
+    });
+});
 app.get("/api/test", function (req, res) {
     res.json({ message: "Hello World!" });
 });

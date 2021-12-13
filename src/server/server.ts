@@ -7,6 +7,8 @@ import http from 'http';
 import dotenv from "dotenv";
 import path from 'path';
 
+import {UserModel} from './schemas/user.schema.js';
+
 dotenv.config();
 
 const __dirname = path.resolve();
@@ -40,7 +42,13 @@ app.use(cors({
 app.use(express.json());
 
 
-
+app.get("/api/users", function(req,res){
+  UserModel.find()
+  .then(data => res.json({data}))
+  .catch(err => {
+    res.status(501).json({errors: err})
+  })
+})
 
 
 

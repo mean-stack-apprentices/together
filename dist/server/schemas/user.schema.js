@@ -7,5 +7,5 @@ const userSchema = new Schema({
     userName: { type: String, required: true },
     password: { type: String, required: true }
 }, { collection: "Users", toObject: { versionKey: false } });
-const UserModel = model('User', userSchema);
+export const UserModel = model('User', userSchema);
 //# sourceMappingURL=user.schema.js.map
