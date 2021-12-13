@@ -7,43 +7,11 @@ import http from 'http';
 import dotenv from "dotenv";
 import path from 'path';
 
-import {PlayerModel} from "./schemas/player.schema.js";
-import {GameModel} from "./schemas/game.schema.js";
-import {CardModel} from "./schemas/card.schema.js";
-import { setupCardsInitial } from "./helpers/initial.js";
-import { addRandomCards, findNotUsedCards, findPlayerByCardTitle, getGameState, onAddGame, onAddName, onConnection, passOutCards } from "./helpers/io.sim.js";
-
 dotenv.config();
 
 const __dirname = path.resolve();
 
-async function runner() {
-  setupCardsInitial();
-  // await onConnection('1');
-  // await onAddGame('123');
-  // await onAddName('1', 'test', '123');
-  // await onConnection('2');
 
-  // await onConnection('3');
-  // await onAddName('3', 'test3', '123');
-  // await onAddName('2', 'test2', '123');
-  // await addRandomCards('123');
-  // passOutCards('123');
-  // const state = await getGameState('123');
-  // const werewolves = await findPlayerByCardTitle('Werewolf');
-  // const unusedCards = await findNotUsedCards('123');
-  // console.log(JSON.stringify(unusedCards, null, 4));
-  
-  // setTimeout(() => {
-  //   mongoose.connection.db.dropDatabase(function(err, result) {
-  //     console.log(err, result); console.log('DB dropped');
-  //   });
-  // } , 20000);
-}
-
-runner();
-
-dotenv.config();
 const app = express();
 const server = http.createServer(app);
 const clientPath = path.join(__dirname, '/dist/client');
@@ -56,11 +24,13 @@ const io = new socketIO.Server(server,  { cors: {
 const PORT = process.env.PORT || 3000;
 
 mongoose
-  .connect(`${process.env.MONGO_URI}`)
+  // .connect(`${process.env.MONGO_URI}`)
+  .connect('mongodb://localhost:27017/MEAN-Stack-together')
   .then(() => {
     console.log("Connected to DB Successfully");
   })
   .catch((err) => console.log("Failed to Connect to DB", err));
+
 
 app.use(cookieParser())
 app.use(cors({
@@ -68,6 +38,11 @@ app.use(cors({
     origin: ['http://localhost:3000', 'http://localhost:4200', 'http://localhost:3501', 'http://localhost:8080']
 }));
 app.use(express.json());
+
+
+
+
+
 
 app.get("/api/test", function (req, res) {
   res.json({message: "Hello World!"});
