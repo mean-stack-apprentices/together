@@ -18,16 +18,14 @@ import { SocketIoModule, SocketIoConfig } from 'ngx-socket-io';
 import { PageLoginComponent } from './pages/page-login/page-login.component';
 import { PageJoinGameComponent } from './pages/page-join-game/page-join-game.component';
 import { PageCreateGameComponent } from './pages/page-create-game/page-create-game.component';
+import { CoreModule } from './modules/core/core.module';
+import { UsersModule } from './modules/users/users.module';
 
 const config: SocketIoConfig = { url: !environment.production ? 'http://localhost:3000/' : '', options: {} };
 
 @NgModule({
   declarations: [
     AppComponent,
-    UsersListComponent,
-    UserInputComponent,
-    PageUsersComponent,
-    PageLoginComponent,
     PageJoinGameComponent,
     PageCreateGameComponent
   ],
@@ -35,13 +33,9 @@ const config: SocketIoConfig = { url: !environment.production ? 'http://localhos
     BrowserModule,
     AppRoutingModule,
     HttpClientModule,
-    FormsModule,
-    ReactiveFormsModule,
-    StoreModule.forRoot(reducers, { metaReducers }),
-    !environment.production ? StoreDevtoolsModule.instrument() : [],
-    StoreModule.forFeature(fromUser.userFeatureKey, fromUser.reducer),
-    EffectsModule.forRoot([UserEffects]),
     SocketIoModule.forRoot(config),
+    CoreModule,
+    UsersModule,
   ],
   providers: [],
   bootstrap: [AppComponent]
