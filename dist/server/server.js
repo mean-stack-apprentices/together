@@ -11,6 +11,7 @@ import "./schemas/game.schema.js";
 import "./schemas/card.schema.js";
 import { setupCardsInitial } from "./helpers/initial.js";
 import "./helpers/io.sim.js";
+import { UserModel } from "./schemas/user.schema.js";
 dotenv.config();
 const __dirname = path.resolve();
 async function runner() {
@@ -53,15 +54,42 @@ mongoose
 app.use(cookieParser());
 app.use(cors({
     credentials: true,
-    origin: ['http://localhost:3000', 'http://localhost:4200', 'http://localhost:3501', 'http://localhost:8080']
+    origin: [
+    'http://localhost:3000', 
+    'http://localhost:4200', 
+    'http://localhost:3501', 
+    'http://localhost:8080']
 }));
+
 app.use(express.json());
+
 app.get("/api/test", function (req, res) {
     res.json({ message: "Hello World!" });
 });
+
 app.all("/api/*", function (req, res) {
     res.sendStatus(404);
 });
+
+app.post("/create-user", function (req, res) {
+    const { name, email, username, password } = req.body;
+    const user = new UserModel({
+        name,
+        username,
+        email,
+        password,
+    });
+    user.save()
+    .then((data)=>{
+        res.json({ data })
+    })
+    .catch((err)=>{
+        res.status(501);
+        res.json({ errors:err})
+    });
+});
+
+
 server.listen(PORT, function () {
     console.log(`starting at localhost http://localhost:${PORT}`);
 });
