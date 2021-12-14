@@ -5,51 +5,35 @@ import cookieParser from "cookie-parser";
 import * as socketIO from "socket.io";
 import http from 'http';
 import dotenv from "dotenv";
+import bcrypt from "bcrypt";
+import jwt from "jsonwebtoken";
 import path from 'path';
+
+
 import { UserModel } from "./schemas/user.schema.js";
-
-// import { setupCardsInitial } from "./helpers/initial.js";
-
+import { authHandler } from "./middleware/auth.middleware.js";
 
 const __dirname = path.resolve();
 
-// async function runner() {
-//   setupCardsInitial();
-//   // await onConnection('1');
-//   // await onAddGame('123');
-//   // await onAddName('1', 'test', '123');
-//   // await onConnection('2');
-
-//   // await onConnection('3');
-//   // await onAddName('3', 'test3', '123');
-//   // await onAddName('2', 'test2', '123');
-//   // await addRandomCards('123');
-//   // passOutCards('123');
-//   // const state = await getGameState('123');
-//   // const werewolves = await findPlayerByCardTitle('Werewolf');
-//   // const unusedCards = await findNotUsedCards('123');
-//   // console.log(JSON.stringify(unusedCards, null, 4));
-  
-//   // setTimeout(() => {
-//   //   mongoose.connection.db.dropDatabase(function(err, result) {
-//   //     console.log(err, result); console.log('DB dropped');
-//   //   });
-//   // } , 20000);
-// }
-
-// runner();
-
 dotenv.config();
+
+const access_token = process.env.ACCESS_TOKEN_SECRET as string;
+const saltRounds = 10;
+
+
 const app = express();
 const server = http.createServer(app);
 const clientPath = path.join(__dirname, '/dist/client');
 app.use(express.static(clientPath));
 
+
 const io = new socketIO.Server(server,  { cors: {
   origin: '*'
 }});
 
+
 const PORT = process.env.PORT || 3000;
+
 
 mongoose
   // .connect(`${process.env.MONGO_URI}`)
@@ -67,39 +51,56 @@ app.use(cors({
 }));
 app.use(express.json());
 
+
+
 app.get("/api/test", function (req, res) {
   res.json({message: "Hello World!"});
 });
 
 
-app.get("/api/users", function(req,res){
-  UserModel.find()
-  .then((data) => {
+app.get("/api/users", authHandler, function(req: any,res){
+  UserModel.find({}, '-password')
+  .then((data:any) => {
     res.json({data})
+    console.log({data})
   })
-  .catch((err) => {
+  .catch((err:any) => {
     res.status(501).json({error: err})
   })
 });
 
 app.post("/api/create-user", function(req,res){
-  const {email, firstName, lastName, userName} = req.body;
+  const {email, firstName, lastName, username, password} = req.body;
 
-  const user = new UserModel({
-    email,
-    firstName,
-    lastName,
-    userName
+  bcrypt.genSalt(saltRounds, function(err, salt){
+    bcrypt.hash(password, salt, function(err, hash){
+
+      const user = new UserModel({
+        email,
+        firstName,
+        lastName,
+        username,
+        password: hash
+      });
+
+      const token = jwt.sign({id: req.body._id}, access_token, {
+        expiresIn: 90
+      })
+
+      user.save()
+      .then((data: any) => {
+        res.json({data, token});
+        console.log(data, `token: ${token}`)
+      })
+      .catch((err:any) => {
+        res.status(501).json({error:err})
+      })
+    })
+    })
   })
 
-  user.save()
-  .then(data => {
-    res.json({data});
-  })
-  .catch(err => {
-    res.status(501).json({error:err})
-  })
-})
+
+
 
 
 app.all("/api/*", function (req, res) {

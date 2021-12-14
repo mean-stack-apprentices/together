@@ -4,7 +4,8 @@ const userSchema = new Schema({
     email: String,
     firstName: String,
     lastName: String,
-    username: String
+    username: String,
+    password: String,
 });
 export const UserModel = model('User', userSchema);
 //# sourceMappingURL=user.schema.js.map
