@@ -1,65 +1,91 @@
-import express from "express";
-import cors from "cors";
-import mongoose from "mongoose";
-import cookieParser from "cookie-parser";
-import * as socketIO from "socket.io";
+import express from 'express';
+import cors from 'cors';
+import mongoose from 'mongoose';
+import cookieParser from 'cookie-parser';
+import * as socketIO from 'socket.io';
 import http from 'http';
-import dotenv from "dotenv";
+import dotenv from 'dotenv';
+import bcrypt from 'bcrypt';
+import jwt from 'jsonwebtoken';
 import path from 'path';
-import "./schemas/player.schema.js";
-import "./schemas/game.schema.js";
-import "./schemas/card.schema.js";
-import { setupCardsInitial } from "./helpers/initial.js";
-import "./helpers/io.sim.js";
-dotenv.config();
+import { UserModel } from './schemas/user.schema.js';
+import { authHandler } from './middleware/auth.middleware.js';
 const __dirname = path.resolve();
-async function runner() {
-    setupCardsInitial();
-    // await onConnection('1');
-    // await onAddGame('123');
-    // await onAddName('1', 'test', '123');
-    // await onConnection('2');
-    // await onConnection('3');
-    // await onAddName('3', 'test3', '123');
-    // await onAddName('2', 'test2', '123');
-    // await addRandomCards('123');
-    // passOutCards('123');
-    // const state = await getGameState('123');
-    // const werewolves = await findPlayerByCardTitle('Werewolf');
-    // const unusedCards = await findNotUsedCards('123');
-    // console.log(JSON.stringify(unusedCards, null, 4));
-    // setTimeout(() => {
-    //   mongoose.connection.db.dropDatabase(function(err, result) {
-    //     console.log(err, result); console.log('DB dropped');
-    //   });
-    // } , 20000);
-}
-runner();
 dotenv.config();
+const access_token = process.env.ACCESS_TOKEN_SECRET;
+const saltRounds = 10;
 const app = express();
 const server = http.createServer(app);
 const clientPath = path.join(__dirname, '/dist/client');
 app.use(express.static(clientPath));
-const io = new socketIO.Server(server, { cors: {
-        origin: '*'
-    } });
+const io = new socketIO.Server(server, {
+    cors: {
+        origin: '*',
+    },
+});
 const PORT = process.env.PORT || 3000;
 mongoose
-    .connect(`${process.env.MONGO_URI}`)
+    // .connect(`${process.env.MONGO_URI}`)
+    .connect('mongodb://localhost:27017/MEAN-Stack-together')
     .then(() => {
-    console.log("Connected to DB Successfully");
+    console.log('Connected to DB Successfully');
 })
-    .catch((err) => console.log("Failed to Connect to DB", err));
+    .catch((err) => console.log('Failed to Connect to DB', err));
 app.use(cookieParser());
 app.use(cors({
     credentials: true,
-    origin: ['http://localhost:3000', 'http://localhost:4200', 'http://localhost:3501', 'http://localhost:8080']
+    origin: [
+        'http://localhost:3000',
+        'http://localhost:4200',
+        'http://localhost:3501',
+        'http://localhost:8080',
+    ],
 }));
 app.use(express.json());
-app.get("/api/test", function (req, res) {
-    res.json({ message: "Hello World!" });
+app.get('/api/test', function (req, res) {
+    res.json({ message: 'Hello World!' });
 });
-app.all("/api/*", function (req, res) {
+app.get('/api/users', authHandler, function (req, res) {
+    UserModel.find({}, '-password')
+        .then((data) => {
+        res.json({ data });
+        console.log({ data });
+    })
+        .catch((err) => {
+        res.status(501).json({ error: err });
+    });
+});
+app.post('/api/create-user', async function (req, res) {
+    const { email, firstName, lastName, username, password } = req.body;
+    const uniqueEmail = await UserModel.findOne({ email }).lean();
+    if (!uniqueEmail) {
+        bcrypt.genSalt(saltRounds, function (err, salt) {
+            bcrypt.hash(password, salt, function (err, hash) {
+                const user = new UserModel({
+                    email,
+                    firstName,
+                    lastName,
+                    username,
+                    password: hash,
+                });
+                const token = jwt.sign({ user }, access_token, {});
+                user
+                    .save()
+                    .then((data) => {
+                    res.json({ data, token });
+                    console.log(data, `token: ${token}`);
+                })
+                    .catch((err) => {
+                    res.status(501).json({ error: err });
+                });
+            });
+        });
+    }
+    else {
+        res.json({ message: `${email} is taken. Use another email` });
+    }
+});
+app.all('/api/*', function (req, res) {
     res.sendStatus(404);
 });
 server.listen(PORT, function () {
@@ -72,7 +98,7 @@ io.on('connection', function (socket) {
         console.log('user disconnected');
     });
 });
-app.all("*", function (req, res) {
+app.all('*', function (req, res) {
     const filePath = path.join(__dirname, '/dist/client/index.html');
     console.log(filePath);
     res.sendFile(filePath);
