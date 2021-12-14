@@ -1,3 +1,4 @@
+import { UserModel } from './schemas/user.schema';
 import express from "express";
 import cors from "cors";
 import mongoose from "mongoose";
@@ -61,6 +62,31 @@ app.get("/api/test", function (req, res) {
 });
 app.all("/api/*", function (req, res) {
     res.sendStatus(404);
+});
+app.get('/users', function (req, res) {
+    UserModel.find()
+        .then((data) => res.json({ data }))
+        .catch((err) => {
+        res.status(501);
+        res.json({ errors: err });
+    });
+});
+app.post('/create-user', function (req, res) {
+    const { email, firstname, lastname, username } = req.body;
+    const user = new UserModel({
+        email,
+        firstname,
+        lastname,
+        username
+    });
+    user.save()
+        .then((data) => {
+        res.json({ data });
+    })
+        .catch((err) => {
+        res.status(501);
+        res.json({ error: err });
+    });
 });
 server.listen(PORT, function () {
     console.log(`starting at localhost http://localhost:${PORT}`);
