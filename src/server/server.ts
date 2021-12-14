@@ -77,7 +77,7 @@ app.all("/api/*", function (req, res) {
   res.sendStatus(404);
 });
 
-app.get('/users', function (req, res) {
+app.get('/users', function(req, res) {
   UserModel.find()
     .then(data => res.json({ data }))
     .catch(err => {
