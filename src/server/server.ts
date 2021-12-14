@@ -6,42 +6,38 @@ import * as socketIO from "socket.io";
 import http from 'http';
 import dotenv from "dotenv";
 import path from 'path';
+import { UserModel } from "./schemas/user.schema.js";
 
-import {PlayerModel} from "./schemas/player.schema.js";
-import {GameModel} from "./schemas/game.schema.js";
-import {CardModel} from "./schemas/card.schema.js";
-import { setupCardsInitial } from "./helpers/initial.js";
-import { addRandomCards, findNotUsedCards, findPlayerByCardTitle, getGameState, onAddGame, onAddName, onConnection, passOutCards } from "./helpers/io.sim.js";
+// import { setupCardsInitial } from "./helpers/initial.js";
 
-dotenv.config();
 
 const __dirname = path.resolve();
 
-async function runner() {
-  setupCardsInitial();
-  // await onConnection('1');
-  // await onAddGame('123');
-  // await onAddName('1', 'test', '123');
-  // await onConnection('2');
+// async function runner() {
+//   setupCardsInitial();
+//   // await onConnection('1');
+//   // await onAddGame('123');
+//   // await onAddName('1', 'test', '123');
+//   // await onConnection('2');
 
-  // await onConnection('3');
-  // await onAddName('3', 'test3', '123');
-  // await onAddName('2', 'test2', '123');
-  // await addRandomCards('123');
-  // passOutCards('123');
-  // const state = await getGameState('123');
-  // const werewolves = await findPlayerByCardTitle('Werewolf');
-  // const unusedCards = await findNotUsedCards('123');
-  // console.log(JSON.stringify(unusedCards, null, 4));
+//   // await onConnection('3');
+//   // await onAddName('3', 'test3', '123');
+//   // await onAddName('2', 'test2', '123');
+//   // await addRandomCards('123');
+//   // passOutCards('123');
+//   // const state = await getGameState('123');
+//   // const werewolves = await findPlayerByCardTitle('Werewolf');
+//   // const unusedCards = await findNotUsedCards('123');
+//   // console.log(JSON.stringify(unusedCards, null, 4));
   
-  // setTimeout(() => {
-  //   mongoose.connection.db.dropDatabase(function(err, result) {
-  //     console.log(err, result); console.log('DB dropped');
-  //   });
-  // } , 20000);
-}
+//   // setTimeout(() => {
+//   //   mongoose.connection.db.dropDatabase(function(err, result) {
+//   //     console.log(err, result); console.log('DB dropped');
+//   //   });
+//   // } , 20000);
+// }
 
-runner();
+// runner();
 
 dotenv.config();
 const app = express();
@@ -56,11 +52,13 @@ const io = new socketIO.Server(server,  { cors: {
 const PORT = process.env.PORT || 3000;
 
 mongoose
-  .connect(`${process.env.MONGO_URI}`)
+  // .connect(`${process.env.MONGO_URI}`)
+  .connect('mongodb://localhost:27017/MEAN-Stack-together')
   .then(() => {
     console.log("Connected to DB Successfully");
   })
   .catch((err) => console.log("Failed to Connect to DB", err));
+
 
 app.use(cookieParser())
 app.use(cors({
@@ -72,6 +70,38 @@ app.use(express.json());
 app.get("/api/test", function (req, res) {
   res.json({message: "Hello World!"});
 });
+
+
+app.get("/api/users", function(req,res){
+  UserModel.find()
+  .then((data) => {
+    res.json({data})
+  })
+  .catch((err) => {
+    res.status(501).json({error: err})
+  })
+});
+
+app.post("/api/create-user", function(req,res){
+  const {email, firstName, lastName, userName} = req.body;
+
+  const user = new UserModel({
+    email,
+    firstName,
+    lastName,
+    userName
+  })
+
+  user.save()
+  .then(data => {
+    res.json({data});
+  })
+  .catch(err => {
+    res.status(501).json({error:err})
+  })
+})
+
+
 app.all("/api/*", function (req, res) {
   res.sendStatus(404);
 });
