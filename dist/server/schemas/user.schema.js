@@ -1,11 +1,44 @@
 import mongoose from 'mongoose';
 const { Schema, model } = mongoose;
 const userSchema = new Schema({
-    email: String,
-    firstName: String,
-    lastName: String,
-    username: String,
-    password: String,
+    email: {
+        type: String,
+        required: true,
+        validate: {
+            validator: (email) => {
+                const regex = /^(([^<>()[\]\.,;:\s@\"]+(\.[^<>()[\]\.,;:\s@\"]+)*)|(\".+\"))@(([^<>()[\]\.,;:\s@\"]+\.)+[^<>()[\]\.,;:\s@\"]{2,})$/i;
+                console.log(regex.test(email));
+                return regex.test(email);
+            },
+            message: props => `${props.value} is not a valid email!`
+        }
+    },
+    firstName: {
+        type: String,
+        minlength: 2,
+        required: true,
+        validate: {
+            validator: (firstName) => {
+                const doesItContainANumber = /\d/g;
+                return !doesItContainANumber.test(firstName);
+            },
+            message: props => `${props.value} is not a valid first name!`
+        }
+    },
+    lastName: {
+        type: String,
+        minlength: 2,
+        required: true,
+        validate: {
+            validator: (lastName) => {
+                const doesItContainANumber = /\d/g;
+                return !doesItContainANumber.test(lastName);
+            },
+            message: props => `${props.value} is not a valid last name!`
+        }
+    },
+    username: { type: String, minLength: 3, maxlength: 8, required: true },
+    password: { type: String, minLength: 5, required: true }
 });
 export const UserModel = model('User', userSchema);
 //# sourceMappingURL=user.schema.js.map
