@@ -13,6 +13,7 @@ import {CardModel} from "./schemas/card.schema.js";
 import { setupCardsInitial } from "./helpers/initial.js";
 import { addRandomCards, findNotUsedCards, findPlayerByCardTitle, getGameState, onAddGame, onAddName, onConnection, passOutCards } from "./helpers/io.sim.js";
 import { authHandler } from "./middleware/auth.middleware.js";
+
 import bcrypt from "bcrypt";
 dotenv.config();
 
