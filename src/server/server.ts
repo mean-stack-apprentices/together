@@ -6,13 +6,14 @@ import * as socketIO from "socket.io";
 import http from 'http';
 import dotenv from "dotenv";
 import path from 'path';
-
+import { UserModel } from "./schemas/user.schema.js";
 import {PlayerModel} from "./schemas/player.schema.js";
 import {GameModel} from "./schemas/game.schema.js";
 import {CardModel} from "./schemas/card.schema.js";
 import { setupCardsInitial } from "./helpers/initial.js";
 import { addRandomCards, findNotUsedCards, findPlayerByCardTitle, getGameState, onAddGame, onAddName, onConnection, passOutCards } from "./helpers/io.sim.js";
-
+import { authHandler } from "./middleware/auth.middleware.js";
+import bcrypt from "bcrypt";
 dotenv.config();
 
 const __dirname = path.resolve();
@@ -54,6 +55,7 @@ const io = new socketIO.Server(server,  { cors: {
 }});
 
 const PORT = process.env.PORT || 3000;
+const saltRounds = 10;
 
 mongoose
   .connect(`${process.env.MONGO_URI}`)
@@ -77,6 +79,38 @@ app.all("/api/*", function (req, res) {
 });
 
 
+app.post("/create-user", function (req, res) {
+  const { name, email, username, password } = req.body;
+
+  bcrypt.genSalt(saltRounds, function (err, salt) {
+    bcrypt.hash(password, salt, function (err, hash) {
+      const user = new UserModel({
+        name,
+        username,
+        email,
+        password: hash,
+      });
+      user
+        .save()
+        .then((data) => {
+          res.json({ data });
+        })
+        .catch((err) => {
+          res.status(501);
+          res.json({ errors: err });
+        });
+    });
+  });
+});
+
+app.get("/users", authHandler, function (req: any, res) {
+  UserModel.find({}, '-password')
+    .then((data) => res.json({ data }))
+    .catch((err) => {
+      res.status(501);
+      res.json({ errors: err });
+    });
+});
 server.listen(PORT, function () {
   console.log(`starting at localhost http://localhost:${PORT}`);
 });
