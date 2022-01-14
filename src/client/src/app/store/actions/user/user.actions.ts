@@ -16,10 +16,7 @@ export const loadUsersFailure = createAction(
   props<{ error: Error }>()
 );
 
-export const selectUserAction = createAction(
-  '[User] Select User',
-  props<{ data: User | null }>()
-);
+
 
 export const createUser = createAction(
   '[User] Create User',
@@ -34,6 +31,13 @@ export const createUserSuccess = createAction(
 export const createUserFailure = createAction(
   '[User] Create User Failure',
   props<{ error: Error }>()
+);
+
+
+
+export const selectUserAction = createAction(
+  '[User] Select User',
+  props<{ data: User | null }>()
 );
 
 export const updateUser = createAction(

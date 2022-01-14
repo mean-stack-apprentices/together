@@ -11,9 +11,9 @@ import { User } from '../../../../../shared/models/user.model';
   styleUrls: ['./page-login.component.scss']
 })
 export class PageLoginComponent implements OnInit {
-  selectedUser$: Observable<User | null>;
+  selectedUser$: Observable<User | undefined>;
   constructor(
-    private store: Store<AppState>,
+    private store: Store<any>,
   ) {
 
     this.selectedUser$ = this.store.select(selectedUserSelector);

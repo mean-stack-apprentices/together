@@ -9,10 +9,12 @@ import { UserEffects } from 'src/app/store/effects/user/user.effects';
 import { environment } from 'src/environments/environment';
 
 import * as fromUser from '../../store/reducers/user/user.reducer';
+import { SharedModule } from '../shared/shared.module';
 
 @NgModule({
   declarations: [],
   imports: [
+    SharedModule,
     CommonModule,
     StoreModule.forRoot(reducers, { metaReducers }),
     !environment.production ? StoreDevtoolsModule.instrument() : [],

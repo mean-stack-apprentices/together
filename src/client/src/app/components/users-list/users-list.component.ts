@@ -16,11 +16,11 @@ import { User } from '../../../../../shared/models/user.model';
 export class UsersListComponent implements OnInit {
 
   @Input() public users: User[] = [];
-  @Input() public selectedUser: User | null = null;
+  @Input() public selectedUser: User | undefined | null= undefined;
 
   constructor(
     private userService: UserService,
-    private store: Store<AppState>,
+    private store: Store<any>,
     ) {
 
 
@@ -37,15 +37,15 @@ export class UsersListComponent implements OnInit {
     console.log(`user '${user.name}' deleted successfully`);
   }
 
-  selectUser(user: User, selectedUser: User | null) {
+  selectUser(user: User, selectedUser: User | null | undefined) {
     this.store.dispatch(selectUserAction({data: this.isSelected(selectedUser, user) ?  null : user}))
   }
 
-  checkSelected(selectedUser: User | null, user: User) {
+  checkSelected(selectedUser: User | undefined|  null, user: User) {
     return this.isSelected(selectedUser, user) ? 'green' : 'black';
   }
 
-  isSelected(selectedUser: User | null, user: User) {
+  isSelected(selectedUser: User | null | undefined, user: User) {
     return selectedUser?._id === user._id;
   }
 

@@ -1,7 +1,14 @@
-<div class="form-input-container">
-  <label
-  [for]="label"
-   [innerHTML]="label"></label>
-  <input [formControlName]="controlName" [id]="label" type="text" class="form-input" [placeholder]="placeholder">
+<div class="form-input-container" appHighlight="red">
+  <form [formGroup]="form">
+    <label [for]="label" [innerHTML]="label"></label>
+    <input
+      [formControlName]="controlName"
+      [id]="label"
+      type="text"
+      class="form-input"
+      [placeholder]="placeholder"
+    />
+  </form>
 </div>
-
+{{ {firstName: 'Joe', lastName: 'Schmoe'} | userFullName}}
+{{ [21.83773, 22.52, 30.1, 49.00] | sum}}

@@ -12,11 +12,11 @@ export class UserService {
   constructor(private api: ApiService) {}
 
   getUsers() {
-    return this.api.get<{ data: User[] }>('users').pipe(map((res) => res.data));
+    return this.api.get<{ data: User[] }>('user/all').pipe(map((res) => res.data));
   }
   createUser(user: User) {
     return this.api
-      .post<{ data: User }>('create-user', user)
+      .post<{ data: User }>('user/create', user)
       .pipe(map((res) => res.data));
   }
   login(user: Partial<User>) {

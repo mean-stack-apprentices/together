@@ -11,12 +11,12 @@ import { User } from '../../../../../shared/models/user.model';
   styleUrls: ['./page-users.component.scss']
 })
 export class PageUsersComponent implements OnInit {
-  users$: Observable<User[]>;
-  selectedUser$: Observable<User | null>;
+  // users$: Observable<User[]>;
+  selectedUser$: Observable<User | undefined>;
   constructor(
-    private store: Store<AppState>,
+    private store: Store<any>,
   ) {
-    this.users$ = this.store.select(usersSelector);
+    // this.users$ = this.store.select(usersSelector);
     this.selectedUser$ = this.store.select(selectedUserSelector);
    }
 

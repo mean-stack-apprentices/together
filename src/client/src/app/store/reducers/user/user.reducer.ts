@@ -1,3 +1,4 @@
+import { createEntityAdapter, EntityState } from '@ngrx/entity';
 import { Action, createReducer, on } from '@ngrx/store';
 import { User } from '../../../../../../shared/models/user.model';
 import { createUserSuccess, deleteUserSuccess, loadUsers, loadUsersSuccess, selectUserAction, updateUserSuccess } from '../../actions/user/user.actions';
@@ -5,36 +6,43 @@ import { createUserSuccess, deleteUserSuccess, loadUsers, loadUsersSuccess, sele
 
 export const userFeatureKey = 'user';
 
-export interface State {
-  users: User[];
-  selectedUser: User | null;
+export interface State extends EntityState<User> {
 
+  selectedUserId: string;
 }
 
-export const initialState: State = {
-  users: [],
-  selectedUser: null,
-};
+
+
+export const userAdapter = createEntityAdapter<User>(
+  {
+    selectId: selectUserId,
+  }
+);
+
+export const initialState: State = userAdapter.getInitialState({
+  // additional entity state properties
+  selectedUserId: '',
+});
+export function selectUserId(a: User): string {
+  //In this case this would be optional since primary key is id
+  return a._id || '';
+}
 
 
 export const reducer = createReducer(
   initialState,
   on(loadUsersSuccess, (state, action) => {
-    return { ...state, users: action.data }
+    return userAdapter.setAll(action.data, state);
   }),
   on(selectUserAction, (state, action) => {
-    return { ...state, selectedUser: action.data }
+    return { ...state, selectedUserId: `${action.data?._id}` }
   }),
   on(updateUserSuccess, (state, action) => {
-    return {...state, users: state.users.map(user => user._id === action.data._id ? action.data : user)}
+    return userAdapter.updateOne({id: `${action.data._id}`, changes: action.data}, state);
   }),
-  on(deleteUserSuccess, (state, action) => {
-    return {...state, users: state.users.filter(user => user._id !== action.data._id)}
-  }),
+  on(deleteUserSuccess, (state, action) => userAdapter.removeOne(`${action?.data._id}`, state)),
   on(createUserSuccess, (state, action) => {
-    const users = [...state.users];
-    users.push(action.data);
-    return {...state, users}
+    return userAdapter.addOne(action.data, state)
   })
 );
 

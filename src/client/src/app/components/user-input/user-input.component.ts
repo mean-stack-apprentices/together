@@ -22,7 +22,7 @@ import { User } from '../../../../../shared/models/user.model';
 })
 export class UserInputComponent implements OnInit, OnChanges {
   addUser: FormGroup;
-  @Input() selectedUser: User | null = null;
+  @Input() selectedUser: User | undefined | null = null;
   constructor(private fb: FormBuilder, private store: Store<AppState>) {
     this.addUser = this.fb.group({
       name: ['', Validators.required],
@@ -53,7 +53,7 @@ export class UserInputComponent implements OnInit, OnChanges {
     }
   }
 
-  postUser(selectedUser: User | null) {
+  postUser(selectedUser: User | null | undefined) {
     !selectedUser
       ? this.store.dispatch(createUser({ data: this.addUser.value }))
       : this.store.dispatch(
